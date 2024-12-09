@@ -8,6 +8,7 @@ use std::sync::mpsc::Receiver;
 
 use super::button::Button;
 use crate::domain::entities::project::ProjectInfo;
+use crate::infrastructure::storage::project_repository::ProjectRepository;
 use crate::presentation::ui::project_dialog::ProjectDialog;
 
 pub struct GameState {
@@ -17,11 +18,14 @@ pub struct GameState {
     _hot_reload: Option<HotReload>,
     reload_receiver: Option<Receiver<()>>,
     project_dialog: ProjectDialog,
+    project_repository: ProjectRepository,
 }
 
 impl GameState {
     pub fn new() -> Self {
         let (hot_reload, rx) = HotReload::new("src").ok().unzip();
+        let project_repository =
+            ProjectRepository::new().expect("No se pudo inicializar el repositorio de proyectos");
 
         GameState {
             create_button: Button::new(50.0, 50.0, 200.0, 40.0, "Crear Proyecto"),
@@ -30,6 +34,7 @@ impl GameState {
             _hot_reload: hot_reload,
             reload_receiver: rx,
             project_dialog: ProjectDialog::new(),
+            project_repository,
         }
     }
 
@@ -68,6 +73,15 @@ impl GameState {
         Ok(())
     }
 
+    fn load_recent_projects(&mut self) {
+        if let Ok(projects) = self.project_repository.get_recent_projects(10) {
+            self.recent_projects = projects
+                .into_iter()
+                .map(|p| p.path.to_string_lossy().to_string())
+                .collect();
+        }
+    }
+
     fn handle_project_creation(&mut self, project_info: ProjectInfo) {
         // Crear el directorio del proyecto
         if let Err(e) = std::fs::create_dir_all(&project_info.path) {
@@ -81,6 +95,13 @@ impl GameState {
 
         // Aquí puedes agregar más lógica de inicialización del proyecto
         println!("Proyecto creado en: {:?}", project_info.path);
+
+        // Agregar a la base de datos
+        if let Err(e) = self.project_repository.add_project(&project_info) {
+            println!("Error al guardar el proyecto en la base de datos: {}", e);
+        }
+
+        self.load_recent_projects(); // Recargar lista
     }
 }
 
