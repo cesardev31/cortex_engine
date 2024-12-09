@@ -7,6 +7,8 @@ use rfd::FileDialog;
 use std::sync::mpsc::Receiver;
 
 use super::button::Button;
+use crate::domain::entities::project::ProjectInfo;
+use crate::presentation::ui::project_dialog::ProjectDialog;
 
 pub struct GameState {
     create_button: Button,
@@ -14,6 +16,7 @@ pub struct GameState {
     recent_projects: Vec<String>,
     _hot_reload: Option<HotReload>,
     reload_receiver: Option<Receiver<()>>,
+    project_dialog: ProjectDialog,
 }
 
 impl GameState {
@@ -26,6 +29,7 @@ impl GameState {
             recent_projects: vec![],
             _hot_reload: hot_reload,
             reload_receiver: rx,
+            project_dialog: ProjectDialog::new(),
         }
     }
 
@@ -62,6 +66,21 @@ impl GameState {
         canvas.draw(&text, text_pos);
 
         Ok(())
+    }
+
+    fn handle_project_creation(&mut self, project_info: ProjectInfo) {
+        // Crear el directorio del proyecto
+        if let Err(e) = std::fs::create_dir_all(&project_info.path) {
+            println!("Error al crear el directorio del proyecto: {}", e);
+            return;
+        }
+
+        // Agregar a proyectos recientes
+        self.recent_projects
+            .push(project_info.path.to_string_lossy().to_string());
+
+        // Aquí puedes agregar más lógica de inicialización del proyecto
+        println!("Proyecto creado en: {:?}", project_info.path);
     }
 }
 
@@ -108,6 +127,9 @@ impl EventHandler for GameState {
             }
         }
 
+        // Dibujar el diálogo si está visible
+        self.project_dialog.draw(ctx, &mut canvas)?;
+
         canvas.finish(ctx)?;
         Ok(())
     }
@@ -121,8 +143,11 @@ impl EventHandler for GameState {
     ) -> GameResult {
         if button == MouseButton::Left {
             if self.create_button.is_clicked(x, y) {
-                self.create_button.active = !self.create_button.active;
-                println!("¡Crear proyecto!");
+                self.project_dialog.show();
+            }
+
+            if let Some(project_info) = self.project_dialog.handle_click(x, y) {
+                self.handle_project_creation(project_info);
             }
 
             if self.open_button.is_clicked(x, y) {
@@ -139,6 +164,11 @@ impl EventHandler for GameState {
                 }
             }
         }
+        Ok(())
+    }
+
+    fn text_input_event(&mut self, _ctx: &mut Context, character: char) -> GameResult {
+        self.project_dialog.handle_input(character);
         Ok(())
     }
 }

@@ -1,7 +1,12 @@
 use ggez::{conf, event, ContextBuilder, GameResult};
 
+mod core;
+mod domain;
 mod game;
+mod infrastructure;
+mod presentation;
 mod utils;
+
 use game::state::GameState;
 
 fn main() -> GameResult {

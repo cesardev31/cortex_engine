@@ -1,4 +1,9 @@
-// Lógica principal del motor
+use crate::core::ecs::World;
+use crate::core::events::EventSystem;
+use crate::infrastructure::rendering::Renderer;
+use crate::infrastructure::resources::AssetManager;
+use ggez::graphics::Color;
+
 pub struct Engine {
     asset_manager: AssetManager,
     event_system: EventSystem,
@@ -17,26 +22,23 @@ impl Engine {
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        // Actualizar sistemas
         self.update_physics(delta_time);
         self.update_animation(delta_time);
         self.update_input();
     }
 
-    pub fn render(&mut self) {
+    pub fn render(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
         self.renderer.clear(Color::BLACK);
-
         // Renderizar entidades
         // ... lógica de renderizado ...
-
-        self.renderer.present().expect("Error al renderizar");
+        self.renderer.present(ctx)
     }
 
-    fn update_physics(&mut self, delta_time: f32) {
+    fn update_physics(&mut self, _delta_time: f32) {
         // Implementar física
     }
 
-    fn update_animation(&mut self, delta_time: f32) {
+    fn update_animation(&mut self, _delta_time: f32) {
         // Implementar animaciones
     }
 
