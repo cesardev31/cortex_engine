@@ -93,6 +93,11 @@ private:
     }
 };
 
+std::string getResourcePath(const std::string &resource)
+{
+    return std::filesystem::current_path().parent_path().string() + "/resources/" + resource;
+}
+
 int main()
 {
     try

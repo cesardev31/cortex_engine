@@ -85,4 +85,20 @@ public:
         window.draw(shape);
         window.draw(text);
     }
+
+    void setPosition(float x, float y)
+    {
+        shape.setPosition(x, y);
+
+        // Reposicionar el texto para mantenerlo centrado en el botón
+        sf::FloatRect textBounds = text.getLocalBounds();
+        text.setPosition(
+            x + (shape.getSize().x - textBounds.width) / 2,
+            y + (shape.getSize().y - textBounds.height) / 2 - 2);
+    }
+
+    void setPosition(const sf::Vector2f &position)
+    {
+        setPosition(position.x, position.y);
+    }
 };

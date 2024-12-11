@@ -25,5 +25,9 @@ target_link_libraries(${PROJECT_NAME}
     SQLite::SQLite3
 )
 
-# Copiar recursos
-file(COPY ${CMAKE_SOURCE_DIR}/resources DESTINATION ${CMAKE_BINARY_DIR}) 
+# Copiar recursos (corregido)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/resources
+    ${CMAKE_BINARY_DIR}/resources
+)

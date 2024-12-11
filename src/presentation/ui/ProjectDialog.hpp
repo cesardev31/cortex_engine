@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include "../../infrastructure/storage/ProjectRepository.hpp"
+#include "CreateProjectDialog.hpp"
 
 class ProjectDialog
 {
@@ -14,6 +15,7 @@ private:
     sf::Text recentProjectsText;
     std::unique_ptr<Button> createProjectButton;
     std::unique_ptr<Button> openProjectButton;
+    std::unique_ptr<Button> exitButton;
 
     struct RecentProject
     {
@@ -25,6 +27,8 @@ private:
     };
 
     std::vector<RecentProject> recentProjects;
+    CreateProjectDialog createProjectDialog;
+    bool isModalOpen = false;
 
 public:
     ProjectDialog()
@@ -76,10 +80,27 @@ public:
 
         // Cargar proyectos desde SQLite
         loadRecentProjects();
+
+        // Botón de salida en la parte inferior
+        exitButton = std::make_unique<Button>(
+            sf::Vector2f(50, 520), // Posición en la parte inferior
+            sf::Vector2f(120, 40),
+            "SALIR",
+            [this]()
+            { onExit(); },
+            sf::Color(220, 53, 69) // Color rojo para indicar acción destructiva
+        );
     }
 
     void handleEvent(const sf::Event &event, const sf::RenderWindow &window)
     {
+        if (createProjectDialog.isVisible())
+        {
+            createProjectDialog.handleEvent(event, window);
+            return;
+        }
+
+        // Procesar eventos normales solo si no hay modal abierto
         createProjectButton->handleEvent(event, window);
         openProjectButton->handleEvent(event, window);
 
@@ -107,35 +128,49 @@ public:
                 openRecentProject(project.path);
             }
         }
+
+        if (!createProjectDialog.isVisible())
+        {
+            exitButton->handleEvent(event, window);
+        }
     }
 
     void draw(sf::RenderWindow &window)
     {
         window.draw(background);
         window.draw(titleText);
-        createProjectButton->draw(window);
-        openProjectButton->draw(window);
-        window.draw(recentProjectsText);
 
-        // Dibujar proyectos recientes
-        if (recentProjects.empty())
+        // Cambiar la condición para usar isVisible del diálogo
+        if (!createProjectDialog.isVisible())
         {
-            sf::Text noProjectsText;
-            noProjectsText.setFont(font);
-            noProjectsText.setString("No hay proyectos recientes");
-            noProjectsText.setCharacterSize(20);
-            noProjectsText.setFillColor(sf::Color(120, 120, 120));
-            noProjectsText.setPosition(50, 230);
-            window.draw(noProjectsText);
-        }
-        else
-        {
-            for (const auto &project : recentProjects)
+            createProjectButton->draw(window);
+            openProjectButton->draw(window);
+            window.draw(recentProjectsText);
+
+            // Dibujar proyectos recientes
+            if (recentProjects.empty())
             {
-                window.draw(project.highlight);
-                window.draw(project.nameText);
+                sf::Text noProjectsText;
+                noProjectsText.setFont(font);
+                noProjectsText.setString("No hay proyectos recientes");
+                noProjectsText.setCharacterSize(20);
+                noProjectsText.setFillColor(sf::Color(120, 120, 120));
+                noProjectsText.setPosition(50, 230);
+                window.draw(noProjectsText);
             }
+            else
+            {
+                for (const auto &project : recentProjects)
+                {
+                    window.draw(project.highlight);
+                    window.draw(project.nameText);
+                }
+            }
+
+            exitButton->draw(window);
         }
+
+        createProjectDialog.draw(window);
     }
 
 private:
@@ -174,8 +209,12 @@ private:
 
     void onCreateProject()
     {
-        std::cout << "Crear nuevo proyecto" << std::endl;
-        // TODO: Implementar diálogo de creación
+        isModalOpen = true;
+        createProjectDialog.setOnCloseCallback([this]()
+                                               {
+                                                   isModalOpen = false; // Asegurarnos de que se actualice el estado
+                                               });
+        createProjectDialog.show();
     }
 
     void onOpenProject()
@@ -188,5 +227,18 @@ private:
     {
         std::cout << "Abriendo proyecto reciente: " << path << std::endl;
         // TODO: Implementar apertura de proyecto
+    }
+
+    // Agregar método para cerrar el modal
+    void closeModal()
+    {
+        isModalOpen = false;
+    }
+
+    void onExit()
+    {
+        // Puedes agregar aquí lógica adicional antes de cerrar
+        std::cout << "Cerrando aplicación..." << std::endl;
+        std::exit(0); // O enviar un evento de cierre a la ventana
     }
 };
