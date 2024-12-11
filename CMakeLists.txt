@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Encontrar SFML
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
+# Encontrar SQLite3
+find_package(SQLite3 REQUIRED)
+
 # Archivos fuente
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "src/*.hpp")
@@ -19,6 +22,7 @@ target_link_libraries(${PROJECT_NAME}
     sfml-graphics 
     sfml-window 
     sfml-system
+    SQLite::SQLite3
 )
 
 # Copiar recursos

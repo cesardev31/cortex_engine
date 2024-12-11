@@ -51,12 +51,12 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsfml-dev
+          sudo apt-get install -y libsfml-dev libsqlite3-dev
 
       - name: Install SFML (Windows)
         if: runner.os == 'Windows'
         run: |
-          vcpkg install sfml:x64-windows
+          vcpkg install sfml:x64-windows sqlite3:x64-windows
           echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
 
       - name: Set reusable strings
