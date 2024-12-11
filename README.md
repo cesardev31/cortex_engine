@@ -84,3 +84,21 @@ cesardev31 - [@cesardev31](https://twitter.com/cesardev31)
 ## 🙏 Agradecimientos
 
 - [GGEZ](https://ggez.rs/) - Framework de juegos
+
+## Compilación y Ejecución
+
+Para compilar y ejecutar el proyecto, sigue estos pasos:
+
+1. Navega al directorio raíz del proyecto.
+2. Ejecuta el script de compilación:
+
+   ````bash
+   ./compile.sh   ```
+
+   ````
+
+3. El ejecutable `cortex` se generará en el directorio `build`.
+4. Para ejecutar el programa, asegúrate de estar en el directorio `build` y ejecuta:
+   ````bash
+   ./cortex   ```
+   ````
