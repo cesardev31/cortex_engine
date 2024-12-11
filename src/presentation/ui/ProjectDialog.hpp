@@ -209,11 +209,10 @@ private:
 
     void onCreateProject()
     {
-        isModalOpen = true;
-        createProjectDialog.setOnCloseCallback([this]()
-                                               {
-                                                   isModalOpen = false; // Asegurarnos de que se actualice el estado
-                                               });
+        createProjectDialog.setOnProjectCreatedCallback([this]()
+                                                        {
+                                                            loadRecentProjects(); // Recargar la lista después de crear un proyecto
+                                                        });
         createProjectDialog.show();
     }
 

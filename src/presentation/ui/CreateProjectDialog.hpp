@@ -3,6 +3,8 @@
 #include "Button.hpp"
 #include <memory>
 #include <functional>
+#include <filesystem>
+#include "../../domain/services/ProjectManager.hpp"
 
 class CreateProjectDialog
 {
@@ -35,6 +37,7 @@ private:
     std::unique_ptr<Button> browseButton;
 
     std::function<void()> onCloseCallback;
+    std::function<void()> onProjectCreated;
 
 public:
     CreateProjectDialog()
@@ -238,6 +241,11 @@ public:
         return m_isVisible;
     }
 
+    void setOnProjectCreatedCallback(std::function<void()> callback)
+    {
+        onProjectCreated = callback;
+    }
+
 private:
     void updatePositions()
     {
@@ -302,18 +310,20 @@ private:
         std::string path = pathText.getString();
         if (!name.empty() && !path.empty())
         {
-            // Crear el proyecto usando ProjectRepository
-            Domain::ProjectInfo newProject(name, path);
-            Infrastructure::ProjectRepository repo;
-            if (repo.addProject(newProject))
+            ProjectManager projectManager;
+            if (projectManager.createProject(name, std::filesystem::path(path) / name))
             {
                 std::cout << "Proyecto creado exitosamente" << std::endl;
                 hide();
-                // Opcional: Recargar la lista de proyectos recientes
-                // loadRecentProjects();
+                // Recargar la lista de proyectos recientes
+                if (onProjectCreated)
+                {
+                    onProjectCreated();
+                }
             }
             else
             {
+                // TODO: Mostrar mensaje de error al usuario
                 std::cout << "Error al crear el proyecto" << std::endl;
             }
         }
@@ -321,30 +331,45 @@ private:
 
     void openFileDialog()
     {
-// En Linux, podemos usar zenity
 #ifdef __linux__
-        FILE *pipe = popen("zenity --file-selection --directory", "r");
-        if (pipe)
+        try
         {
-            char buffer[1024];
-            std::string result = "";
-            while (!feof(pipe))
-            {
-                if (fgets(buffer, sizeof(buffer), pipe) != nullptr)
-                    result += buffer;
-            }
-            pclose(pipe);
+            // Usar una biblioteca más moderna para diálogos nativos
+            // Por ejemplo, nativefiledialog-extended (NFD)
+            // O implementar un diálogo personalizado con SFML
 
-            // Eliminar el salto de línea final si existe
-            if (!result.empty() && result[result.length() - 1] == '\n')
+            std::string cmd = "zenity --file-selection --directory"
+                              " --title=\"Seleccionar ubicación del proyecto\""
+                              " --window-icon=question"
+                              " 2>/dev/null"; // Suprimir advertencias
+
+            FILE *pipe = popen(cmd.c_str(), "r");
+            if (!pipe)
             {
-                result.erase(result.length() - 1);
+                throw std::runtime_error("No se pudo abrir el diálogo de selección");
             }
 
-            if (!result.empty())
+            std::array<char, 1024> buffer;
+            std::string result;
+
+            while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
             {
+                result += buffer.data();
+            }
+
+            int status = pclose(pipe);
+            if (status == 0 && !result.empty())
+            {
+                if (result.back() == '\n')
+                {
+                    result.pop_back();
+                }
                 pathText.setString(result);
             }
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Error en el diálogo de selección: " << e.what() << std::endl;
         }
 #endif
     }

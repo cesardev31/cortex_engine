@@ -5,7 +5,8 @@
       "includePath": [
         "${workspaceFolder}/**",
         "/usr/include",
-        "/usr/include/SFML"
+        "/usr/include/SFML",
+        "/usr/include/nlohmann"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/g++",
