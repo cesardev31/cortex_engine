@@ -47,6 +47,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install SFML (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsfml-dev
+
+      - name: Install SFML (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install sfml:x64-windows
+          echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+
       - name: Set reusable strings
         id: strings
         shell: bash
