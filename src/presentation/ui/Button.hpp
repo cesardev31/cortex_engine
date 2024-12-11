@@ -101,4 +101,20 @@ public:
     {
         setPosition(position.x, position.y);
     }
+
+    void setText(const std::string &buttonText)
+    {
+        text.setString(buttonText);
+
+        // Reposicionar el texto para mantenerlo centrado
+        sf::FloatRect textBounds = text.getLocalBounds();
+        text.setPosition(
+            shape.getPosition().x + (shape.getSize().x - textBounds.width) / 2,
+            shape.getPosition().y + (shape.getSize().y - textBounds.height) / 2 - 2);
+    }
+
+    std::string getText() const
+    {
+        return text.getString();
+    }
 };

@@ -5,6 +5,7 @@
 #include "../infrastructure/rendering/Renderer.hpp"
 #include <algorithm>
 #include <stdexcept>
+#include "../presentation/ui/editor/EditorUI.hpp"
 
 class EngineState
 {
@@ -20,9 +21,11 @@ private:
     bool showGrid = true;
     float zoomLevel = 1.0f;
 
+    EditorUI editorUI;
+
 public:
     EngineState(sf::RenderWindow &win, const Domain::ProjectInfo &project)
-        : window(win), engine(win), currentProject(project), renderer(win)
+        : window(win), engine(win), currentProject(project), renderer(win), editorUI(win)
     {
         initializeEngine();
     }
@@ -69,7 +72,7 @@ private:
             {
                 handleZoom(event.mouseWheelScroll);
             }
-            // Agregar más manejadores de eventos según sea necesario
+            editorUI.handleEvent(event);
         }
     }
 
@@ -134,14 +137,7 @@ private:
 
     void renderEditor()
     {
-        // Renderizar la cuadrícula si está activada
-        if (showGrid)
-        {
-            drawGrid();
-        }
-
-        // Renderizar los elementos del editor
-        drawEditorUI();
+        editorUI.draw();
     }
 
     void renderGame()
