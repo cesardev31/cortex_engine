@@ -5,10 +5,15 @@
 #include <vector>
 #include "../../infrastructure/storage/ProjectRepository.hpp"
 #include "CreateProjectDialog.hpp"
+#include "../../core/EngineState.hpp"
+#include "../../domain/entities/Project.hpp"
+#include <filesystem>
+#include <iostream>
 
 class ProjectDialog
 {
 private:
+    sf::RenderWindow &window;
     sf::Font font;
     sf::RectangleShape background;
     sf::Text titleText;
@@ -31,7 +36,8 @@ private:
     bool isModalOpen = false;
 
 public:
-    ProjectDialog()
+    ProjectDialog(sf::RenderWindow &win)
+        : window(win)
     {
         // Cargar fuente
         if (!font.loadFromFile("resources/fonts/Roboto/Roboto-Bold.ttf"))
@@ -209,10 +215,20 @@ private:
 
     void onCreateProject()
     {
-        createProjectDialog.setOnProjectCreatedCallback([this]()
+        createProjectDialog.setOnProjectCreatedCallback([this](const Domain::ProjectInfo &project)
                                                         {
-                                                            loadRecentProjects(); // Recargar la lista después de crear un proyecto
-                                                        });
+            // Ocultar el diálogo de creación
+            createProjectDialog.hide();
+            
+            // Iniciar el motor con el nuevo proyecto
+            try {
+                EngineState engineState(window, project);
+                engineState.run();
+            } catch (const std::exception& e) {
+                std::cerr << "Error al iniciar el motor: " << e.what() << std::endl;
+                // TODO: Mostrar mensaje de error al usuario
+            } });
+
         createProjectDialog.show();
     }
 
@@ -224,8 +240,24 @@ private:
 
     void openRecentProject(const std::string &path)
     {
-        std::cout << "Abriendo proyecto reciente: " << path << std::endl;
-        // TODO: Implementar apertura de proyecto
+        try
+        {
+            Domain::ProjectInfo project(
+                std::filesystem::path(path).filename().string(),
+                path);
+
+            // Ocultar el diálogo de proyectos
+            isModalOpen = false;
+
+            // Iniciar el motor con el proyecto seleccionado
+            EngineState engineState(window, project);
+            engineState.run();
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Error al abrir el proyecto: " << e.what() << std::endl;
+            // TODO: Mostrar mensaje de error al usuario
+        }
     }
 
     // Agregar método para cerrar el modal

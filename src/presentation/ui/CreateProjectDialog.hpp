@@ -37,7 +37,7 @@ private:
     std::unique_ptr<Button> browseButton;
 
     std::function<void()> onCloseCallback;
-    std::function<void()> onProjectCreated;
+    std::function<void(const Domain::ProjectInfo &)> onProjectCreated;
 
 public:
     CreateProjectDialog()
@@ -241,7 +241,7 @@ public:
         return m_isVisible;
     }
 
-    void setOnProjectCreatedCallback(std::function<void()> callback)
+    void setOnProjectCreatedCallback(std::function<void(const Domain::ProjectInfo &)> callback)
     {
         onProjectCreated = callback;
     }
@@ -311,19 +311,22 @@ private:
         if (!name.empty() && !path.empty())
         {
             ProjectManager projectManager;
-            if (projectManager.createProject(name, std::filesystem::path(path) / name))
+            std::filesystem::path projectPath = std::filesystem::path(path) / name;
+            if (projectManager.createProject(name, projectPath))
             {
                 std::cout << "Proyecto creado exitosamente" << std::endl;
-                hide();
-                // Recargar la lista de proyectos recientes
+
+                // Crear el objeto ProjectInfo y pasarlo al callback
+                Domain::ProjectInfo project(name, projectPath);
                 if (onProjectCreated)
                 {
-                    onProjectCreated();
+                    onProjectCreated(project);
                 }
+
+                hide();
             }
             else
             {
-                // TODO: Mostrar mensaje de error al usuario
                 std::cout << "Error al crear el proyecto" << std::endl;
             }
         }

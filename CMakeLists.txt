@@ -5,7 +5,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Encontrar SFML
-find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+find_package(SFML 2.5 COMPONENTS system window graphics REQUIRED)
+
+# Encontrar OpenGL
+find_package(OpenGL REQUIRED)
+
+# Configurar política de OpenGL GLVND
+if(POLICY CMP0072)
+    cmake_policy(SET CMP0072 NEW)
+endif()
 
 # Encontrar SQLite3
 find_package(SQLite3 REQUIRED)
@@ -17,15 +25,23 @@ file(GLOB_RECURSE HEADERS "src/*.hpp")
 # Ejecutable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-# Vincular SFML
+# Vincular bibliotecas
 target_link_libraries(${PROJECT_NAME} 
-    sfml-graphics 
+    sfml-system 
     sfml-window 
-    sfml-system
+    sfml-graphics
+    OpenGL::GL
     SQLite::SQLite3
 )
 
-# Copiar recursos (corregido)
+# Incluir directorios de cabecera
+target_include_directories(${PROJECT_NAME} PRIVATE 
+    ${CMAKE_SOURCE_DIR}/src
+    ${OPENGL_INCLUDE_DIR}
+    ${SQLite3_INCLUDE_DIRS}
+)
+
+# Copiar recursos
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/resources

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Crear y entrar al directorio build
+# Eliminar y recrear el directorio build
+rm -rf build
 mkdir -p build
 cd build
 
@@ -10,6 +11,7 @@ make
 
 # Verificar si la compilación fue exitosa
 if [ $? -eq 0 ]; then
+    echo "Compilación exitosa"
     # Ejecutar
     ./CortexEngine
 else

@@ -15,6 +15,7 @@ private:
 
 public:
     GameState()
+        : projectDialog(window)
     {
         sf::ContextSettings settings;
         settings.antialiasingLevel = 8;
