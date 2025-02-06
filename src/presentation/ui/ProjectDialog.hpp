@@ -13,6 +13,50 @@
 class ProjectDialog
 {
 private:
+    void updateBackgroundSize() {
+        sf::Vector2u windowSize = window.getSize();
+        background.setSize(sf::Vector2f(windowSize));
+        
+        // Actualizar posición y escala de los elementos UI
+        float scaleX = windowSize.x / 800.0f;
+        float scaleY = windowSize.y / 600.0f;
+        float scale = std::min(scaleX, scaleY);
+        
+        // Actualizar título
+        titleText.setScale(scale, scale);
+        titleText.setPosition(windowSize.x / 2.0f - (titleText.getGlobalBounds().width * scale) / 2.0f,
+                            50.0f * scale);
+        
+        // Actualizar texto de proyectos recientes
+        recentProjectsText.setScale(scale, scale);
+        recentProjectsText.setPosition(50.0f * scale,
+                                    200.0f * scale);
+        
+        // Actualizar botones
+        if (createProjectButton) {
+            createProjectButton->setScale(scale);
+            createProjectButton->setPosition(50.0f * scale, 100.0f * scale);
+        }
+        if (openProjectButton) {
+            openProjectButton->setScale(scale);
+            openProjectButton->setPosition(250.0f * scale, 100.0f * scale);
+        }
+        if (exitButton) {
+            exitButton->setScale(scale);
+            exitButton->setPosition(50.0f * scale, windowSize.y - 100.0f * scale);
+        }
+        
+        // Actualizar proyectos recientes
+        float yPos = 250.0f * scale;
+        for (auto& project : recentProjects) {
+            project.nameText.setScale(scale, scale);
+            project.nameText.setPosition(50.0f * scale, yPos);
+            project.highlight.setScale(scale, scale);
+            project.highlight.setPosition(45.0f * scale, yPos);
+            yPos += 40.0f * scale;
+        }
+    }
+
     sf::RenderWindow &window;
     sf::Font font;
     sf::RectangleShape background;
@@ -46,7 +90,7 @@ public:
         }
 
         // Fondo con gradiente moderno
-        background.setSize(sf::Vector2f(800, 600));
+        updateBackgroundSize();
         background.setFillColor(sf::Color(28, 32, 38)); // Color base más oscuro
 
         // Título con estilo moderno
@@ -100,6 +144,10 @@ public:
 
     void handleEvent(const sf::Event &event, const sf::RenderWindow &window)
     {
+        if (event.type == sf::Event::Resized) {
+            updateBackgroundSize();
+        }
+
         if (createProjectDialog.isVisible())
         {
             createProjectDialog.handleEvent(event, window);

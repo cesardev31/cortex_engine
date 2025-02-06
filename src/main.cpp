@@ -60,19 +60,26 @@ private:
                 window.close();
             else if (event.type == sf::Event::Resized)
             {
-                // Calcular el factor de escala manteniendo la proporción
-                float scaleX = event.size.width / baseWidth;
-                float scaleY = event.size.height / baseHeight;
-                float scale = std::min(scaleX, scaleY);
+                // Ajustar la vista al nuevo tamaño de la ventana
+                float aspectRatio = baseWidth / baseHeight;
+                float windowRatio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
+                float viewWidth = baseWidth;
+                float viewHeight = baseHeight;
 
-                // Calcular el nuevo viewport
-                float viewportWidth = (baseWidth * scale) / event.size.width;
-                float viewportHeight = (baseHeight * scale) / event.size.height;
-                float viewportLeft = (1.0f - viewportWidth) / 2.0f;
-                float viewportTop = (1.0f - viewportHeight) / 2.0f;
+                if (windowRatio > aspectRatio) {
+                    viewWidth = viewHeight * windowRatio;
+                } else {
+                    viewHeight = viewWidth / windowRatio;
+                }
 
-                // Aplicar el nuevo viewport
-                baseView.setViewport(sf::FloatRect(viewportLeft, viewportTop, viewportWidth, viewportHeight));
+                // Centrar la vista
+                baseView.setSize(viewWidth, viewHeight);
+                baseView.setCenter(viewWidth / 2.0f, viewHeight / 2.0f);
+                
+                // Ajustar el viewport para cubrir toda la ventana
+                baseView.setViewport(sf::FloatRect(0.0f, 0.0f, 1.0f, 1.0f));
+                
+                // Aplicar la vista actualizada
                 window.setView(baseView);
             }
 

@@ -10,12 +10,15 @@ private:
     sf::Font font;
     std::function<void()> callback;
     bool isHovered;
+    sf::Vector2f originalSize;
+    sf::Vector2f originalPosition;
+    float currentScale;
 
 public:
     Button(const sf::Vector2f &position, const sf::Vector2f &size,
            const std::string &buttonText, const std::function<void()> &onClick,
            const sf::Color &baseColor = sf::Color(70, 70, 70))
-        : callback(onClick), isHovered(false)
+        : callback(onClick), isHovered(false), originalSize(size), originalPosition(position), currentScale(1.0f)
     {
         if (!font.loadFromFile("resources/fonts/Roboto/Roboto-Bold.ttf"))
         {
@@ -80,21 +83,43 @@ public:
         }
     }
 
+    void setScale(float scale) {
+        currentScale = scale;
+        shape.setSize(originalSize * scale);
+        text.setScale(scale, scale);
+        updateTextPosition();
+    }
+
+    void setPosition(float x, float y) {
+        originalPosition = sf::Vector2f(x, y);
+        shape.setPosition(x, y);
+        updateTextPosition();
+    }
+
     void draw(sf::RenderWindow &window)
     {
         window.draw(shape);
         window.draw(text);
     }
 
-    void setPosition(float x, float y)
+    void setText(const std::string &buttonText)
     {
-        shape.setPosition(x, y);
+        text.setString(buttonText);
+        updateTextPosition();
+    }
 
-        // Reposicionar el texto para mantenerlo centrado en el botón
+    std::string getText() const
+    {
+        return text.getString();
+    }
+
+    private:
+    void updateTextPosition() {
         sf::FloatRect textBounds = text.getLocalBounds();
         text.setPosition(
-            x + (shape.getSize().x - textBounds.width) / 2,
-            y + (shape.getSize().y - textBounds.height) / 2 - 2);
+            originalPosition.x + (shape.getSize().x - textBounds.width * currentScale) / 2.0f,
+            originalPosition.y + (shape.getSize().y - textBounds.height * currentScale) / 2.0f - 2.0f * currentScale
+        );
     }
 
     void setPosition(const sf::Vector2f &position)
@@ -102,19 +127,5 @@ public:
         setPosition(position.x, position.y);
     }
 
-    void setText(const std::string &buttonText)
-    {
-        text.setString(buttonText);
 
-        // Reposicionar el texto para mantenerlo centrado
-        sf::FloatRect textBounds = text.getLocalBounds();
-        text.setPosition(
-            shape.getPosition().x + (shape.getSize().x - textBounds.width) / 2,
-            shape.getPosition().y + (shape.getSize().y - textBounds.height) / 2 - 2);
-    }
-
-    std::string getText() const
-    {
-        return text.getString();
-    }
 };
